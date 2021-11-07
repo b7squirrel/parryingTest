@@ -4,19 +4,34 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    private BoxCollider2D camBox;
-    private Camera cam;
-    private float sizeX, sizeY, ratio;
+    private PlayerController player;
+    public BoxCollider2D boundsBox;
+
+    public float resolutionY;
+    private float halfHeight, halfWidth;
 
     private void Start()
     {
-        camBox = GetComponent<BoxCollider2D>();
-        cam = GetComponent<Camera>();
+        player = FindObjectOfType<PlayerController>();
 
-        sizeY = cam.orthographicSize * 2;
-        ratio = (float)Screen.width / (float)Screen.height;
-        sizeX = sizeY * ratio;
+        //halfHeight = Camera.main.orthographicSize;
+        //halfWidth = halfHeight * Camera.main.aspect;
 
-        camBox.size = new Vector2(sizeX, sizeY);
+        halfHeight = resolutionY * .5f / 16f; 
+        halfWidth = halfHeight * Camera.main.aspect;
     }
+
+    private void Update()
+    {
+        if(player != null)
+        {
+            //transform.position = new Vector3(player.transform.position.x, player.transform.position.y, transform.position.z);
+
+            transform.position = new Vector3(
+                Mathf.Clamp(player.transform.position.x, boundsBox.bounds.min.x + halfWidth, boundsBox.bounds.max.x - halfWidth),
+                Mathf.Clamp(player.transform.position.y, boundsBox.bounds.min.y + halfHeight, boundsBox.bounds.max.y - halfHeight),
+                transform.position.z);
+        }
+    }
+
 }

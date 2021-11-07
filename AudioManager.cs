@@ -18,5 +18,10 @@ public class AudioManager : MonoBehaviour
         soundEffects[soundToPlay].Play();
     }
 
+    public void StopSFX(int soundToStop)
+    {
+        soundEffects[soundToStop].Stop();
+    }
+
     
 }

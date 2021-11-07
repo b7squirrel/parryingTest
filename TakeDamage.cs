@@ -19,6 +19,7 @@ public class TakeDamage : MonoBehaviour
         //플레이어의 attack box가 닿거나 반사된 탄알이 닿으면 사망처리
         if (collision.CompareTag("PlayerAttackBox") || collision.CompareTag("ProjectileEnemyHit"))
         {
+            AudioManager.instance.StopSFX(15);
             AudioManager.instance.PlaySFX(3);
             EnemyDie();
         }

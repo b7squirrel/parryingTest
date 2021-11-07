@@ -111,6 +111,9 @@ public class EnemyProjectileHoming : MonoBehaviour
             if (collision.CompareTag("Player") || collision.CompareTag("Enemy") || collision.CompareTag("Ground"))
             {
                 DestroyProjectile();
+            }else if(collision.CompareTag("Cover") && !isParryied)
+            {
+                DestroyProjectile();
             }
         }
     }
@@ -118,6 +121,7 @@ public class EnemyProjectileHoming : MonoBehaviour
     void DestroyProjectile()
     {
         Instantiate(projectileDieEffect, transform.position, transform.rotation);
+        AudioManager.instance.PlaySFX(13);
         Destroy(gameObject);
     }
 

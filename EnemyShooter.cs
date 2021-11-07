@@ -94,6 +94,9 @@ public class EnemyShooter : MonoBehaviour
     public void Shoot()
     {
         Instantiate(projectile, shootingPoint.position, shootingPoint.rotation);
+        // 에너지를 모으는 사운드를 끄고 마법 발사 사운드 재생
+        AudioManager.instance.StopSFX(15);
+        AudioManager.instance.PlaySFX(14);
     }
 
     void AnticEnergy()
@@ -103,6 +106,9 @@ public class EnemyShooter : MonoBehaviour
 
         energyIn = Instantiate(anticEnergy, anticEnergyPoint.position, anticEnergyPoint.rotation);
         energyIn.transform.parent = transform;
+
+        // 에너지를 모으는 사운드 재생
+        AudioManager.instance.PlaySFX(15);
     }
 
     private void OnDrawGizmosSelected()

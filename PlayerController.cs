@@ -19,20 +19,24 @@ public class PlayerController : MonoBehaviour
     public LayerMask whatIsGround;
     public Transform groundCheck;
 
+    [Header("Jump")]
     public float jumpForce;
     public float jumpRememberTime;
     private float jumpRemember;
-    
+
+    [Header("Pushed Back")]
     public float pushedBackTime;
     public float pushedBackCounter;
     private float pushedBackForce;
 
     //dashRoll variables
+    [Header("Dash Roll")]
     public float dashRollCounter;
     public float dashsRollLength;
     public float dashRollForce;
     public float timeBetweenDashRoll;
     private float dashRollCoolTime;
+    private bool dashRollSound; // dash Roll이 실행되면 한 번만 재생이 되도록
 
     //parried variables
     public float parriedBackForce;
@@ -50,6 +54,13 @@ public class PlayerController : MonoBehaviour
     public GameObject candle;
     public Transform candlePoint;
     private GameObject _candle;
+
+    [Header("Dust")]
+    public GameObject dustJump;
+    public Transform dustPoint;
+    public GameObject dustLand;
+    public GameObject dustWalk;
+
 
     private void Awake()
     {
@@ -79,6 +90,16 @@ public class PlayerController : MonoBehaviour
             {
                 //  colliders 초기화
                 PlayerPlayer();
+                dashRollSound = false;
+
+                // Grounded
+                isGrounded = Physics2D.OverlapCircle(groundCheck.position, .05f, whatIsGround);
+
+                // Dust Walk 멈추었다 걸을 때, 방향을 바꿀 때만 먼지 생성
+                if (direction != Input.GetAxisRaw("Horizontal") && Input.GetAxisRaw("Horizontal") != 0 && isGrounded)
+                {
+                    DustWalk();
+                }
 
                 // Direction
                 if (Input.GetAxisRaw("Horizontal") != 0)
@@ -95,9 +116,6 @@ public class PlayerController : MonoBehaviour
                     transform.eulerAngles = new Vector3(0f, 180f, 0f);
                 }
 
-                // Grounded
-                isGrounded = Physics2D.OverlapCircle(groundCheck.position, .05f, whatIsGround);
-
                 // Move
                 xDirection = Input.GetAxisRaw("Horizontal");
                 theRB.velocity = new Vector2(moveSpeed * xDirection, theRB.velocity.y);
@@ -112,7 +130,9 @@ public class PlayerController : MonoBehaviour
 
                 if (isGrounded && jumpRemember > 0)
                 {
+                    DustJump();
                     theRB.velocity = new Vector2(theRB.velocity.x, jumpForce);
+                    AudioManager.instance.PlaySFX(12);
                     jumpRemember = 0;
                     anim.Rebind();
                 }
@@ -145,12 +165,21 @@ public class PlayerController : MonoBehaviour
             {
                 dashRollCounter -= Time.deltaTime;
                 theRB.velocity = new Vector2(dashRollForce * direction, 0f);
+                if(!dashRollSound)
+                {
+                    DustWalk();
+                    AudioManager.instance.PlaySFX(10);
+                    dashRollSound = true;
+                }
 
                 // 대쉬 중간에 점프 버튼을 누르면 대쉬를 중지하고 점프
                 if (Input.GetKeyDown(KeyCode.X))
                 {
                     dashRollCounter = 0f;
                     theRB.velocity = new Vector2(theRB.velocity.x, jumpForce);
+                    DustJump();
+                    AudioManager.instance.StopSFX(10);
+                    AudioManager.instance.PlaySFX(12);
                     anim.Rebind();
                 }
             }
@@ -160,6 +189,8 @@ public class PlayerController : MonoBehaviour
             pushedBackCounter -= Time.deltaTime;
             theRB.velocity = new Vector2(-1f * direction * pushedBackForce, 0f);
         }
+
+        
         
         SetAnimationState();
         //LightFollowing();
@@ -229,5 +260,27 @@ public class PlayerController : MonoBehaviour
     {
         
         _candle.transform.position = new Vector3(candlePoint.position.x, candlePoint.position.y, _candle.transform.position.z);
+    }
+
+    void DustJump()
+    {
+        Instantiate(dustJump, dustPoint.position, dustPoint.rotation);
+    }
+
+    public void DustLand()
+    {
+        Instantiate(dustLand, dustPoint.position, dustPoint.rotation);
+        
+    }
+
+    public void DustWalk()
+    {
+        Instantiate(dustWalk, dustPoint.position, dustPoint.rotation);
+    }
+
+    // Player_Land 애니메이션에서 animation event로 호출
+    public void PlaySfxLand()
+    {
+        AudioManager.instance.PlaySFX(11);
     }
 }
