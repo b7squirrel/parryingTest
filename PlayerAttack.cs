@@ -9,6 +9,7 @@ public class PlayerAttack : MonoBehaviour
     public GameObject attackPoint;
     public Animator anim;
     public bool isAttacking;
+    public float attackJumpForce;
 
     private void Awake()
     {
@@ -28,7 +29,7 @@ public class PlayerAttack : MonoBehaviour
             {
                 anim.SetTrigger("Attack");
 
-                isAttacking = true;
+                //isAttacking = true;
                 Attack();
             }
         }
@@ -36,7 +37,12 @@ public class PlayerAttack : MonoBehaviour
     void Attack()
     {
         attackPoint.gameObject.SetActive(true);
+        if(PlayerController.instance.isGrounded)
+        {
+            PlayerController.instance.theRB.AddForce(Vector2.up * attackJumpForce, ForceMode2D.Impulse);
+        }
+        
         AudioManager.instance.PlaySFX(7);
-        isAttacking = false;
+        //isAttacking = false;
     }
 }

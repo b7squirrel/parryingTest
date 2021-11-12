@@ -6,16 +6,21 @@ public class PlayerController : MonoBehaviour
 {
     public static PlayerController instance;
 
-    [HideInInspector]
-    public float direction;
-
-    public float moveSpeed;
-
-    private float xDirection;
+    public Animator anim;
     public Rigidbody2D theRB;
     public SpriteRenderer theSR;
 
-    private bool isGrounded;
+    [HideInInspector]
+    public float direction;  // 0을 포함하지 않는 방향
+    [Header("Move")]
+    public float moveSpeed;
+    private float xDirection;  // 0을 포함하는 방향 input.GetAxisRaw("Horizontal")과 일치. 
+    public float stopToMoveForce;
+    
+    [HideInInspector]
+    public bool isGrounded;
+
+    [Header("Ground Check")]
     public LayerMask whatIsGround;
     public Transform groundCheck;
 
@@ -39,16 +44,11 @@ public class PlayerController : MonoBehaviour
     private bool dashRollSound; // dash Roll이 실행되면 한 번만 재생이 되도록
 
     //parried variables
+    [HideInInspector]
     public float parriedBackForce;
 
     private BoxCollider2D theBox;
     private CircleCollider2D theCircle;
-
-    public Animator anim;
-
-    //[Header("Camera")]
-    //public Transform cameraTarget;
-    //public float aheadAmount, aheadSpeed;
 
     [Header("light")]
     public GameObject candle;
@@ -61,6 +61,8 @@ public class PlayerController : MonoBehaviour
     public GameObject dustLand;
     public GameObject dustWalk;
 
+    [Header("Attack")]  
+    public float attackForce_x;  // attack 할 때 앞으로 돌진하는 힘, y축 점프는 PlayerAttack 스크립트에 있음
 
     private void Awake()
     {
@@ -88,78 +90,88 @@ public class PlayerController : MonoBehaviour
 
             if (dashRollCounter <= 0f)
             {
-                //  colliders 초기화
-                PlayerPlayer();
-                dashRollSound = false;
 
-                // Grounded
-                isGrounded = Physics2D.OverlapCircle(groundCheck.position, .05f, whatIsGround);
-
-                // Dust Walk 멈추었다 걸을 때, 방향을 바꿀 때만 먼지 생성
-                if (direction != Input.GetAxisRaw("Horizontal") && Input.GetAxisRaw("Horizontal") != 0 && isGrounded)
+                if(!anim.GetCurrentAnimatorStateInfo(0).IsName("Player_Attack"))
                 {
-                    DustWalk();
-                }
+                    //  colliders 초기화
+                    PlayerPlayer();
+                    dashRollSound = false;
 
-                // Direction
-                if (Input.GetAxisRaw("Horizontal") != 0)
-                {
-                    direction = Input.GetAxisRaw("Horizontal");
-                }
+                    // Grounded
+                    isGrounded = Physics2D.OverlapCircle(groundCheck.position, .05f, whatIsGround);
 
-                if (direction > 0f)
-                {
-                    transform.eulerAngles = new Vector3(0f, 0f, 0f);
-                }
-                else if (direction < 0f)
-                {
-                    transform.eulerAngles = new Vector3(0f, 180f, 0f);
-                }
-
-                // Move
-                xDirection = Input.GetAxisRaw("Horizontal");
-                theRB.velocity = new Vector2(moveSpeed * xDirection, theRB.velocity.y);
-
-                // Jump
-                jumpRemember -= Time.deltaTime;
-
-                if (Input.GetKeyDown(KeyCode.X))
-                {
-                    jumpRemember = jumpRememberTime;
-                }
-
-                if (isGrounded && jumpRemember > 0)
-                {
-                    DustJump();
-                    theRB.velocity = new Vector2(theRB.velocity.x, jumpForce);
-                    AudioManager.instance.PlaySFX(12);
-                    jumpRemember = 0;
-                    anim.Rebind();
-                }
-
-                //DashRoll
-                if (dashRollCoolTime <= 0f)
-                {
-                    if (Input.GetKeyDown(KeyCode.C) && isGrounded)
+                    // Dust Walk 멈추었다 걸을 때, 방향을 바꿀 때만 먼지 생성
+                    if (direction != Input.GetAxisRaw("Horizontal") && Input.GetAxisRaw("Horizontal") != 0 && isGrounded)
                     {
+                        DustWalk();
+                    }
+
+                    if (xDirection == 0 && Input.GetAxisRaw("Horizontal") != 0 && isGrounded) // 정지상태였다가 움직인다면 먼지 생성
+                    {
+                        DustWalk();
+                    }
+
+                    // Direction
+                    if (Input.GetAxisRaw("Horizontal") != 0)
+                    {
+                        direction = Input.GetAxisRaw("Horizontal");
+                    }
+
+                    if (direction > 0f)
+                    {
+                        transform.eulerAngles = new Vector3(0f, 0f, 0f);
+                    }
+                    else if (direction < 0f)
+                    {
+                        transform.eulerAngles = new Vector3(0f, 180f, 0f);
+                    }
+
+                    // Move
+                    xDirection = Input.GetAxisRaw("Horizontal");
+                    theRB.velocity = new Vector2(moveSpeed * xDirection, theRB.velocity.y);
+
+                    // Jump
+                    jumpRemember -= Time.deltaTime;
+
+                    if (Input.GetKeyDown(KeyCode.X))
+                    {
+                        jumpRemember = jumpRememberTime;
+                    }
+
+                    if (isGrounded && jumpRemember > 0)
+                    {
+                        DustJump();
+                        theRB.velocity = new Vector2(theRB.velocity.x, jumpForce);
+                        AudioManager.instance.PlaySFX(12);
+                        jumpRemember = 0;
                         anim.Rebind();
-                        anim.SetTrigger("DashRoll");
-                        dashRollCounter = dashsRollLength;
-                        dashRollCoolTime = timeBetweenDashRoll;
-                        PlayerInvincible();
+                    }
+
+                    //DashRoll
+                    if (dashRollCoolTime <= 0f)
+                    {
+                        if (Input.GetKeyDown(KeyCode.C) && isGrounded)
+                        {
+                            anim.Rebind();
+                            anim.SetTrigger("DashRoll");
+                            dashRollCounter = dashsRollLength;
+                            dashRollCoolTime = timeBetweenDashRoll;
+                            PlayerInvincible();
+                        }
+                    }
+                    else
+                    {
+                        dashRollCoolTime -= Time.deltaTime;
                     }
                 }
                 else
                 {
-                    dashRollCoolTime -= Time.deltaTime;
+                    if(!isGrounded)
+                    {
+                        theRB.velocity = new Vector2(attackForce_x * direction, theRB.velocity.y);  // 지면에 있을 때 attack모션이 재생되고 있다면 attackForce로 돌진
+                    }
                 }
-
-                // Camera Control
-                //if (Input.GetAxisRaw("Horizontal") != 0)
-                //{
-                //    cameraTarget.localPosition = 
-                //        new Vector3(aheadAmount * Input.GetAxisRaw("Horizontal"), cameraTarget.localPosition.y, cameraTarget.localPosition.z);
-                //}
+                
             }
             else
             {
@@ -187,11 +199,12 @@ public class PlayerController : MonoBehaviour
         else
         {
             pushedBackCounter -= Time.deltaTime;
-            theRB.velocity = new Vector2(-1f * direction * pushedBackForce, 0f);
+            //theRB.velocity = new Vector2(-1f * direction * pushedBackForce, 0f);
+            theRB.velocity = new Vector2(0f, 0f);
         }
 
-        
-        
+
+
         SetAnimationState();
         //LightFollowing();
     }

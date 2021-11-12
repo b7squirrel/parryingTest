@@ -11,17 +11,26 @@ public class CameraFollow : MonoBehaviour
     private Bounds targetBounds;
 
     public float speed;
+    private float waitForSeconds = 0.5f;
 
     void Start()
     {
+        transform.parent = null;
         player = GameObject.Find("CameraTarget").GetComponent<Transform>();
         camBox = GetComponent<BoxCollider2D>();
         FindLimits();
     }
     private void LateUpdate()
     {
-        SetOneLimit();
-        FollowPlayer();
+        if(waitForSeconds > 0)
+        {
+            waitForSeconds -= Time.deltaTime;
+        }
+        else
+        {
+            SetOneLimit();
+            FollowPlayer();
+        }
     }
 
     void FindLimits()

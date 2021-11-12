@@ -5,8 +5,10 @@ using UnityEngine;
 public class CheatKeys : MonoBehaviour
 {
     [Header("Red Warlock")]
+    private bool WarlockIsLeft;
     public GameObject redWarlock;
-    public Transform redWarlockPoint;
+    public Transform redWarlockPointLeft;
+    public Transform redWarlockPointRight;
 
     [Header("Goul Fighter")]
     public GameObject goulFighter;
@@ -42,7 +44,17 @@ public class CheatKeys : MonoBehaviour
 
         if(Input.GetKeyDown(KeyCode.M))
         {
-            Instantiate(redWarlock, redWarlockPoint.position, Quaternion.identity);
+            WarlockIsLeft = !WarlockIsLeft;
+            if(WarlockIsLeft)
+            {
+                Instantiate(redWarlock, redWarlockPointLeft.position, Quaternion.identity);
+            }
+            else
+            {
+                Instantiate(redWarlock, redWarlockPointRight.position, Quaternion.identity);
+            }
+
+            
         }
 
         if(Input.GetKeyDown(KeyCode.N))
