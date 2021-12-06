@@ -425,6 +425,14 @@ public class EnemyMelee : MonoBehaviour
                 }
             }
         }
+        if (collision.CompareTag("PlayerCAttackBox"))
+        {
+            isParrying = false;
+            AudioManager.instance.PlaySFX(2);
+            CameraShake.instance.CamShakeA();
+
+            _takaDamage.EnemyDie();
+        }
     }
     void Parry()
     {
@@ -432,7 +440,6 @@ public class EnemyMelee : MonoBehaviour
         Instantiate(sparkEffect, sparkEffectPoint.transform.position, sparkEffectPoint.transform.rotation);
         if (RespawnManager.instance.isPlayerDead == false)
         {
-            
             AudioManager.instance.PlaySFX(5);
             PlayerController.instance.Parried();
         }

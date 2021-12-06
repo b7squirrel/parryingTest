@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     public Animator anim;
     public Rigidbody2D theRB;
     public SpriteRenderer theSR;
+    private int testCommit;
 
     [HideInInspector]
     public float direction;  // 0을 포함하지 않는 방향

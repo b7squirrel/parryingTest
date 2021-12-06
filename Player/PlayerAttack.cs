@@ -8,7 +8,6 @@ public class PlayerAttack : MonoBehaviour
 
     public GameObject attackPoint;
     public Animator anim;
-    public bool isAttacking;
     public float attackJumpForce;
 
     [Header("Swing Effect")]
@@ -25,30 +24,58 @@ public class PlayerAttack : MonoBehaviour
     }
     void Update()
     {
-        if(!anim.GetCurrentAnimatorStateInfo(0).IsName("Player_Attack"))
+        if(!anim.GetCurrentAnimatorStateInfo(0).IsName("Player_Attack") &&
+            !anim.GetCurrentAnimatorStateInfo(0).IsName("Player_CAttack"))
         {
             attackPoint.gameObject.SetActive(false);
 
             if (Input.GetKeyDown(KeyCode.Z) && PlayerController.instance.pushedBackCounter <= 0f)
             {
-                anim.SetTrigger("Attack");
-                var clone = Instantiate(swingEffect, swingEffectPoint.position, swingEffectPoint.rotation);
-                clone.transform.parent = PlayerController.instance.transform;
-
-                isAttacking = true;
                 Attack();
+            }
+
+            if(Input.GetKeyDown(KeyCode.Z) && PlayerParrying.instance.counterAtkPossible)
+            {
+                CounterAttack();
             }
         }
     }
     void Attack()
     {
         attackPoint.gameObject.SetActive(true);
-        if(PlayerController.instance.isGrounded)
+        attackPoint.gameObject.tag = "PlayerAttackBox"; // 노멀어택 태그
+        Debug.Log(attackPoint.gameObject.tag);
+
+        anim.SetTrigger("Attack");
+        var clone = Instantiate(swingEffect, swingEffectPoint.position, swingEffectPoint.rotation);
+        clone.transform.parent = PlayerController.instance.transform;
+
+        if (PlayerController.instance.isGrounded)
         {
             PlayerController.instance.theRB.AddForce(Vector2.up * attackJumpForce, ForceMode2D.Impulse);
         }
         
         AudioManager.instance.PlaySFX(7);
-        //isAttacking = false;
+        PlayerParrying.instance.counterAtkPossible = false;  // 카운터어택 가능 여부를 false로 초기화
+    }
+
+    void CounterAttack()
+    {
+        attackPoint.gameObject.SetActive(true);
+        attackPoint.gameObject.tag = "PlayerCAttackBox";  // 카운터 어택 태그
+        Debug.Log(attackPoint.gameObject.tag);
+
+        anim.SetTrigger("CAttack");
+        //var clone = Instantiate(swingEffect, swingEffectPoint.position, swingEffectPoint.rotation);
+        //clone.transform.parent = PlayerController.instance.transform;
+
+
+        if (PlayerController.instance.isGrounded)
+        {
+            PlayerController.instance.theRB.AddForce(Vector2.up * attackJumpForce, ForceMode2D.Impulse);
+        }
+
+        AudioManager.instance.PlaySFX(7);
+        PlayerParrying.instance.counterAtkPossible = false;  // 카운터어택 가능 여부를 false로 초기화
     }
 }

@@ -12,6 +12,9 @@ public class PlayerParrying : MonoBehaviour
 
     public bool isParrying; //패링 중 패링이 발동되는 것을 방지하기 위한 플래그, 플레이어헬스컨트롤러에서 패링여부 체크하기 위해 접근
 
+    // 패링 후 카운터 어택이 가능해지는 플래그. PlayerParryingPoint에서 제어함. PlayerParryingPoint의 active가 false될 때가 있기 때문에 여기에서 변수 선언.
+    public bool counterAtkPossible; 
+
     public Animator anim;
 
     private void Awake()
@@ -61,4 +64,9 @@ public class PlayerParrying : MonoBehaviour
     {
         parryingPoint.gameObject.SetActive(false);
     }
+
+    void ResetCounterAtkPossible()
+    {
+        PlayerParrying.instance.counterAtkPossible = false;
+    }    
 }
